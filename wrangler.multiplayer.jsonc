@@ -33,5 +33,23 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+  "routes": [
+    {
+      "pattern": "vabgames.com/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "vabgames.com/api/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "www.vabgames.com/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "www.vabgames.com/api/smash/*",
+      "zone_name": "vabgames.com"
+    }
+  ]
 }
