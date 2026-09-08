@@ -1,0 +1,42 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {initialGame,press,advanceRoom,resumeAfterPause} from "../shared/engine.ts";
+test("Shield stops every incoming attack without consuming protection",()=>{
+ let g=initialGame(1000);g.players[0].stash=50;
+ g=press(g,0,"shield",undefined,1000,1,200);
+ g=press(g,1,"steal",0,1100,2,200);
+ g=press(g,2,"good",0,1200,3,200);
+ g=press(g,3,"steal",0,1300,4,200);
+ assert.equal(g.log.filter(e=>e.type==="shield_triggered").length,3);
+ assert.equal(g.players[0].shielded,true);
+ assert.equal(g.players[0].cooldowns.shield,15000);
+ assert.equal(g.greaterGood.length,0);
+ g=advanceRoom(g,5000,200);assert.equal(g.players[0].shielded,false);
+ g=press(g,0,"shield",undefined,14999,5,200);
+ assert.equal(g.log.at(-1).details.accepted,false);
+ g=press(g,0,"shield",undefined,15000,6,200);
+ assert.equal(g.players[0].shieldUntil,19000);
+});
+test("all prebanked Steals are visibly blocked at one protected payout, with no duplicated cash",()=>{
+ let g=initialGame(1000);
+ for(let id=1;id<4;id++)g=press(g,id,"steal",0,1000,id,200);
+ g=press(g,0,"shield",undefined,1100,4,200);
+ assert.equal(g.players.filter(p=>p.armed.steal).length,3);
+ g=press(g,0,"smash",undefined,1200,5,200);g=advanceRoom(g,1425,200);
+ const blocks=g.log.filter(e=>e.type==="shield_triggered");
+ assert.equal(blocks.length,3);
+ assert.ok(blocks.every(e=>e.details.amount===undefined));
+ assert.equal(g.log.filter(e=>e.type==="payout").length,1);
+ assert.ok(Math.abs(g.players[0].stash-12.85)<.00001);
+});
+test("Shield must still be active at payout and pause preserves its remaining duration",()=>{
+ let g=initialGame(1000);
+ g=press(g,1,"steal",0,1000,1,200);g=press(g,0,"shield",undefined,1100,2,200);
+ g=press(g,0,"smash",undefined,5000,3,200);g=advanceRoom(g,5225,200);
+ assert.equal(g.log.filter(e=>e.type==="steal_triggered").length,1);
+ assert.equal(g.players[0].stash,0);
+ let p=press(initialGame(1000),0,"shield",undefined,1000,1,200);
+ p=resumeAfterPause(p,2000,10000);
+ assert.equal(p.players[0].shieldUntil,13000);
+ assert.equal(p.players[0].cooldowns.shield,23000);
+});

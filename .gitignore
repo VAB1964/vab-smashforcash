@@ -1,0 +1,7 @@
+node_modules/
+multiplayer-dist/
+multiplayer-worker-dist/
+.wrangler/
+.env*
+multiplayer/worker-env.d.ts
+*.tsbuildinfo
