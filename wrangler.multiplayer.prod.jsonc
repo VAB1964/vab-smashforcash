@@ -5,13 +5,50 @@
   "compatibility_date": "2026-05-22",
   "workers_dev": true,
   "routes": [
-    {"pattern":"vabgames.com/smash/*","zone_name":"vabgames.com"},
-    {"pattern":"vabgames.com/api/smash/*","zone_name":"vabgames.com"},
-    {"pattern":"www.vabgames.com/smash/*","zone_name":"vabgames.com"},
-    {"pattern":"www.vabgames.com/api/smash/*","zone_name":"vabgames.com"}
+    {
+      "pattern": "vabgames.com/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "vabgames.com/api/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "www.vabgames.com/smash/*",
+      "zone_name": "vabgames.com"
+    },
+    {
+      "pattern": "www.vabgames.com/api/smash/*",
+      "zone_name": "vabgames.com"
+    }
   ],
-  "assets": {"directory":"multiplayer-dist","binding":"ASSETS","run_worker_first":["/api/smash/*","/smash/","/smash/room/*"]},
-  "durable_objects": {"bindings":[{"name":"GAME_ROOMS","class_name":"GameRoom"}]},
-  "migrations": [{"tag":"v1","new_sqlite_classes":["GameRoom"]}],
-  "observability": {"enabled":true}
+  "assets": {
+    "directory": "multiplayer-dist",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/smash/*",
+      "/smash/",
+      "/smash/room/*"
+    ],
+    "html_handling": "none"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME_ROOMS",
+        "class_name": "GameRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "GameRoom"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
 }
