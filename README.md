@@ -31,15 +31,15 @@ For the first staging test, disable builds for non-production branches. Save the
 build settings before triggering a new build. The deploy script explicitly selects
 wrangler.multiplayer.jsonc; plain npx wrangler deploy does not select this file.
 
-The staging configuration creates the GAME_ROOMS Durable Object binding and publishes
-to workers.dev. It does not change VABGames routes.
+The existing Worker now serves https://vabgames.com/smash/ and /api/smash/*,
+including the www hostname, using the same deployment pattern as Dominoes.
+Its name retains the staging suffix for continuity. `npm run deploy` is the
+active VABGames deployment command; it also keeps the workers.dev test address.
+The homepage launch tile is published in vabgames-website.
 
-After testing staging, use a production Worker named vab-smash-for-cash and
-deploy command npm run deploy:production. Its configuration adds /smash/* and
-/api/smash/* on vabgames.com and www.vabgames.com.
-
-The VABGames launch tile is prepared at https://github.com/VAB1964/vabgames-website/pull/1.
-Merge it after the production /smash/ route is working.
+wrangler.multiplayer.prod.jsonc is an alternate configuration for a separate
+Worker. Do not deploy it alongside the active Worker without planning a route
+migration, since both configurations declare the same VABGames routes.
 
 ## Verification
 
