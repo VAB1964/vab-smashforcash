@@ -27,6 +27,10 @@ Create a Worker connected to this GitHub repository.
 | Build command | npm ci && npm run build |
 | Deploy command | npm run deploy |
 
+For the first staging test, disable builds for non-production branches. Save the
+build settings before triggering a new build. The deploy script explicitly selects
+wrangler.multiplayer.jsonc; plain npx wrangler deploy does not select this file.
+
 The staging configuration creates the GAME_ROOMS Durable Object binding and publishes
 to workers.dev. It does not change VABGames routes.
 
