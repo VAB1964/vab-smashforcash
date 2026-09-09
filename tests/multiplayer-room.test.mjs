@@ -8,6 +8,16 @@ function readyRoom(){
  assert.equal(command(s,0,{type:"start",sequence:2,gameNumber:1},1000).ok,true);
  return s;
 }
+test("one human can start a game with three bots",()=>{
+ const s=createRoom("SOLO01",1000);
+ assert.equal(joinRoom(s,"Solo","token0","conn0",1000),0);
+ assert.equal(command(s,0,{type:"bots",value:true,sequence:1,gameNumber:1},1000).ok,true);
+ assert.equal(command(s,0,{type:"ready",value:true,sequence:2,gameNumber:1},1000).ok,true);
+ assert.equal(command(s,0,{type:"start",sequence:3,gameNumber:1},1000).ok,true);
+ assert.equal(s.status,"playing");
+ assert.equal(s.seats.filter(p=>p&&!p.bot).length,1);
+ assert.equal(s.seats.filter(p=>p?.bot).length,3);
+});
 test("simultaneous presses use receipt order; duplicate command does not add a second claim",()=>{
  const s=readyRoom();
  const a={type:"press",action:"smash",sequence:3,gameNumber:1};

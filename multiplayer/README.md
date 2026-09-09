@@ -5,7 +5,7 @@ It is not deployed to Cloudflare yet. The existing live Sites publication remain
 
 ## Included
 
-- Four-seat invite rooms, 2–4 humans, optional bot fill, readiness and host start.
+- Four-seat invite rooms, 1–4 humans, optional bot fill, readiness and host start.
 - Same five-action game, with per-seat targeting, money travel, Shield and Lockdown effects.
 - Server-owned game clock, cooldowns, pot and payouts; chronological deadline catch-up.
 - Ordered incremental event delivery; full state on reconnect with old audio/animations suppressed.
@@ -24,7 +24,7 @@ From the project root:
 3. npm run dev
 
 Open the address Wrangler prints, then Create room. Use another browser profile or device
-to join the invite URL. At least two humans are required; fill the other seats with bots.
+to join the invite URL, or play alone. At least one human is required; fill the other seats with bots.
 Use separate browser profiles for local testing: the stored reconnect token intentionally
 rejoins the same seat when opening another tab in the same browser.
 

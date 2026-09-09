@@ -78,7 +78,7 @@ export function command(s:RoomState,seatId:number,c:Command,now:number):Result {
         break;
       case "start":
         if(!host || s.status!=="lobby")return fail("Only the host can start from the lobby.");
-        if(s.seats.some(p=>!p || !p.ready || !p.connected) || s.seats.filter(p=>p && !p.bot).length<2)return fail("At least two humans must join. Fill four seats and have everyone ready.");
+        if(s.seats.some(p=>!p || !p.ready || !p.connected) || s.seats.filter(p=>p && !p.bot).length<1)return fail("At least one human must join. Fill empty seats with bots and have everyone ready.");
         configurePlayers(s);s.status="playing";s.game.startedAt=now;s.game.lastTick=now;
         addLog(s.game,"The room game started.","game_start",{goal:s.goal,timingPolicy:"server receipt order; no latency compensation",rulesVersion:"multiplayer-1"},now);break;
       case "press":

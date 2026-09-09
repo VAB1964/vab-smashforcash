@@ -1,6 +1,6 @@
 # Smash for Cash
 
-Real-time multiplayer for VABGames.com. Four seats, 2–4 humans, optional bots,
+Real-time multiplayer for VABGames.com. Four seats, 1–4 humans, optional bots,
 six-character invite codes, and server-authoritative cash and action resolution.
 
 ## Local play
