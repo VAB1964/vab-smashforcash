@@ -29,10 +29,14 @@ test("real room sockets join, reject impersonation, share events, and reconnect"
   a.ws.send(JSON.stringify({type:"bots",value:true,sequence:2,gameNumber:1}));
   await a.until(m=>m.type==="result"&&m.sequence===2);
   a.ws.send(JSON.stringify({type:"start",sequence:3,gameNumber:1}));
+  assert.equal((await a.until(m=>m.type==="result"&&m.sequence===3)).ok,true);
   await a.until(m=>m.type==="snapshot"&&m.room.status==="playing");
+  a.ws.send(JSON.stringify({type:"begin",sequence:4,gameNumber:1}));
+  assert.equal((await a.until(m=>m.type==="result"&&m.sequence===4)).ok,true);
+  await a.until(m=>m.type==="snapshot"&&m.game.startedAt!==null);
   b.ws.send(JSON.stringify({type:"pause",playerId:0,sequence:2,gameNumber:1}));
   assert.equal((await b.until(m=>m.type==="result"&&m.sequence===2)).ok,false);
-  a.ws.send(JSON.stringify({type:"press",action:"shield",sequence:4,gameNumber:1}));
+  a.ws.send(JSON.stringify({type:"press",action:"shield",sequence:5,gameNumber:1}));
   const first=await a.until(m=>m.type==="snapshot"&&m.events.some(e=>e.type==="shield_armed"));
   const second=await b.until(m=>m.type==="snapshot"&&m.events.some(e=>e.type==="shield_armed"));
   assert.deepEqual(first.events.find(e=>e.type==="shield_armed"),second.events.find(e=>e.type==="shield_armed"));

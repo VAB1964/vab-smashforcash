@@ -6,6 +6,7 @@ function readyRoom(){
  const s=createRoom("ABCDEF",1000);
  for(let id=0;id<4;id++){assert.equal(joinRoom(s,"P"+id,"token"+id,"conn"+id,1000),id);assert.equal(command(s,id,{type:"ready",value:true,sequence:1,gameNumber:1},1000).ok,true);}
  assert.equal(command(s,0,{type:"start",sequence:2,gameNumber:1},1000).ok,true);
+ s.game.startedAt=1000;s.game.lastTick=1000;
  return s;
 }
 test("one human can start a game with three bots",()=>{
@@ -15,6 +16,7 @@ test("one human can start a game with three bots",()=>{
  assert.equal(command(s,0,{type:"ready",value:true,sequence:2,gameNumber:1},1000).ok,true);
  assert.equal(command(s,0,{type:"start",sequence:3,gameNumber:1},1000).ok,true);
  assert.equal(s.status,"playing");
+ assert.equal(s.game.startedAt,null);
  assert.equal(s.seats.filter(p=>p&&!p.bot).length,1);
  assert.equal(s.seats.filter(p=>p?.bot).length,3);
 });

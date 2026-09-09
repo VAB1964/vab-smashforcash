@@ -5,7 +5,7 @@ import { Banknote, HandHeart, ShieldCheck } from "lucide-react";
 
 type Event = { type: string; details?: Record<string, unknown> };
 type Block = { id: number; attacker: string; defender: string; action: string; active: boolean; blocked: boolean; elapsed: number; sounded: boolean };
-type View = Block & { x: number; y: number; ax: number; ay: number; attackColor: string; shieldColor: string; reduced: boolean };
+type View = Block & { x: number; y: number; captionY: number; ax: number; ay: number; attackColor: string; shieldColor: string; reduced: boolean };
 const COLORS = ["#67ec67", "#3bcaf5", "#a47aff", "#ff6f70"];
 const IMPACT_MS = 600, END_MS = 3100;
 
@@ -45,10 +45,11 @@ export default function ShieldEffects({ events, names, paused, onImpact }: { eve
           const targetId = currentNames.current.indexOf(b.defender), sourceId = currentNames.current.indexOf(b.attacker);
           const target = cards?.[targetId]?.getBoundingClientRect(), source = cards?.[sourceId]?.getBoundingClientRect();
           if (!target || !source) return [];
-          const x = target.left + target.width / 2, y = target.bottom + 9;
+          const x = target.left + target.width / 2, y = target.bottom - 22;
+          const captionY = Math.max(target.top + 4, target.bottom - 48);
           const t = reduced ? 1 : Math.min(1, b.elapsed / IMPACT_MS), ease = t * t * (3 - 2 * t);
-          return [{ ...b, x, y, ax: source.left + source.width / 2 + (x - source.left - source.width / 2) * ease,
-            ay: source.bottom + 9 + (y - source.bottom - 9) * ease + (reduced ? 0 : Math.sin(t * Math.PI) * 35),
+          return [{ ...b, x, y, captionY, ax: source.left + source.width / 2 + (x - source.left - source.width / 2) * ease,
+            ay: source.bottom - 22 + (y - source.bottom + 22) * ease + (reduced ? 0 : Math.sin(t * Math.PI) * 35),
             shieldColor: COLORS[targetId], attackColor: COLORS[sourceId], reduced }];
         }));
       }
@@ -66,7 +67,7 @@ export default function ShieldEffects({ events, names, paused, onImpact }: { eve
         transform: `translate(-50%,-50%) scale(${v.reduced ? 1 : hit ? 1.65 - burst * .45 : .8 + v.elapsed / IMPACT_MS * .5})` }}><ShieldCheck size={40}/></div>}
       {hit && v.blocked && !v.reduced && burst < 1 && Array.from({ length: 6 }, (_, i) => <i key={i} className="shield-fragment" style={{ left: v.x + Math.cos(i * Math.PI / 3) * burst * 46, top: v.y + Math.sin(i * Math.PI / 3) * burst * 34, background: v.attackColor, opacity: 1 - burst, transform: `rotate(${i * 60 + burst * 100}deg)` }}/>) }
       {hit && !v.blocked && <div className="shield-attack-token landed" style={{ left: v.x, top: v.y, color: v.attackColor, opacity: Math.min(1, (END_MS - v.elapsed) / 250) }}><Attack size={23}/></div>}
-      {hit && views.filter(x => x.defender === v.defender && x.elapsed >= IMPACT_MS).at(-1)?.id === v.id && <div className="shield-result-caption" style={{ left: Math.max(100, Math.min(window.innerWidth - 100, v.x)), top: v.y + 27, borderColor: v.blocked ? v.shieldColor : v.attackColor, opacity: Math.min(1, (END_MS - v.elapsed) / 250) }}>{v.blocked ? <ShieldCheck size={15} style={{ color: v.shieldColor }}/> : <Attack size={15} style={{color:v.attackColor}}/>}<span>{v.blocked ? <><b>{v.defender}’s Shield</b> {v.active ? "ended" : "stopped"} {v.attacker}’s {v.action}</> : <><b>{v.attacker} → {v.defender}</b><br/>{v.action === "Steal" ? "Steal banked · waiting for a win" : "Greater Good landed · drain started"}</>}</span></div>}
+      {hit && views.filter(x => x.defender === v.defender && x.elapsed >= IMPACT_MS).at(-1)?.id === v.id && <div className="shield-result-caption" style={{ left: Math.max(100, Math.min(window.innerWidth - 100, v.x)), top: v.captionY, borderColor: v.blocked ? v.shieldColor : v.attackColor, opacity: Math.min(1, (END_MS - v.elapsed) / 250) }}>{v.blocked ? <ShieldCheck size={15} style={{ color: v.shieldColor }}/> : <Attack size={15} style={{color:v.attackColor}}/>}<span>{v.blocked ? <><b>{v.defender}’s Shield</b> {v.active ? "ended" : "stopped"} {v.attacker}’s {v.action}</> : <><b>{v.attacker} → {v.defender}</b><br/>{v.action === "Steal" ? "Steal banked · waiting for a win" : "Greater Good landed · drain started"}</>}</span></div>}
     </div>;
   })}</div>;
 }

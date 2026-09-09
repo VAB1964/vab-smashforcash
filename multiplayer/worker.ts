@@ -101,11 +101,11 @@ export class GameRoom extends DurableObject<Env> {
         if(this.timer)clearInterval(this.timer);this.timer=null;
       }
       tick(s,now);
-      if(s.game.log.length!==count || (s.status==="playing" && s.pausedAt===null && now-this.lastSave>=1000))await this.save();
+      if(s.game.log.length!==count || (s.status==="playing" && s.game.startedAt!==null && s.pausedAt===null && now-this.lastSave>=1000))await this.save();
       if(s.status==="playing" || s.game.log.length!==count)this.broadcast();
     });
   }
-  private async save(){if(!this.state)return;await this.ctx.storage.put("state",this.state);this.lastSave=Date.now();await this.ctx.storage.setAlarm(this.state.status==="playing" && this.state.pausedAt===null?Date.now()+1000:this.state.expiresAt);}
+  private async save(){if(!this.state)return;await this.ctx.storage.put("state",this.state);this.lastSave=Date.now();await this.ctx.storage.setAlarm(this.state.status==="playing" && this.state.game.startedAt!==null && this.state.pausedAt===null?Date.now()+1000:this.state.expiresAt);}
   private send(ws:WebSocket,value:unknown){try{ws.send(JSON.stringify(value));}catch{}}
   private broadcast() {
     const s=this.state;if(!s)return;

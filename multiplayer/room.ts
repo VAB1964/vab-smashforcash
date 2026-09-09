@@ -2,7 +2,7 @@ import { initialGame, advanceRoom, press, chooseBot, botCashOpportunity, isLast,
 
 export type Seat = { id:number; name:string; bot:boolean; ready:boolean; connected:boolean; tokenHash:string; connectionId:string; lastSequence:number; lastResult:Result|null };
 export type Result = { ok:boolean; error?:string };
-export type Command = { sequence:number; gameNumber:number; type:"ready"|"bots"|"start"|"pause"|"resume"|"rematch"|"press"|"replace"; action?:ActionId; target?:number; value?:boolean };
+export type Command = { sequence:number; gameNumber:number; type:"ready"|"bots"|"start"|"begin"|"pause"|"resume"|"rematch"|"press"|"replace"; action?:ActionId; target?:number; value?:boolean };
 export type RoomState = { code:string; goal:number; host:number; status:"lobby"|"playing"|"complete"; pausedAt:number|null; pauseReason:string; seats:(Seat|null)[]; game:Game; sequence:number; revision:number; expiresAt:number; plans:Record<number,{at:number;key:string}> };
 export const ROOM_TTL = 24*60*60*1000;
 const ACTIONS = ["smash","double","lockdown","steal","good","shield"];
@@ -30,7 +30,7 @@ export function joinRoom(s:RoomState,name:string,tokenHash:string,connectionId:s
 export function disconnect(s:RoomState,id:number,connectionId:string,now:number) {
   const seat=s.seats[id];if(!seat || seat.connectionId!==connectionId)return;
   tick(s,now,()=>.5);seat.connected=false;
-  if(s.status==="playing" && s.pausedAt===null){s.pausedAt=now;s.pauseReason=seat.name+" disconnected";s.plans={};}
+  if(s.status==="playing" && s.game.startedAt!==null && s.pausedAt===null){s.pausedAt=now;s.pauseReason=seat.name+" disconnected";s.plans={};}
   if(s.host===id){const successor=s.seats.find(p=>p && !p.bot && p.connected);if(successor)s.host=successor.id;}
   addLog(s.game,seat.name+" disconnected. "+(s.status==="playing"?"The game is paused.":""),"player_disconnected",{player:seat.name},now);s.revision++;
 }
@@ -38,7 +38,7 @@ function configurePlayers(s:RoomState) {
   s.game.players.forEach((p,id)=>{const seat=s.seats[id]!;p.name=seat.name;p.approach=seat.bot?styles[id]:"Human";p.latency=0;});
 }
 export function tick(s:RoomState,now:number,random=Math.random) {
-  if(s.status!=="playing" || s.pausedAt!==null)return;
+  if(s.status!=="playing" || s.game.startedAt===null || s.pausedAt!==null)return;
   s.game=advanceRoom(s.game,now,s.goal);
   if(s.game.winner!==null){s.status="complete";s.plans={};s.revision++;return;}
   if(s.game.lockdownUntil>now){s.plans={};return;}
@@ -79,10 +79,13 @@ export function command(s:RoomState,seatId:number,c:Command,now:number):Result {
       case "start":
         if(!host || s.status!=="lobby")return fail("Only the host can start from the lobby.");
         if(s.seats.some(p=>!p || !p.ready || !p.connected) || s.seats.filter(p=>p && !p.bot).length<1)return fail("At least one human must join. Fill empty seats with bots and have everyone ready.");
-        configurePlayers(s);s.status="playing";s.game.startedAt=now;s.game.lastTick=now;
+        configurePlayers(s);s.status="playing";break;
+      case "begin":
+        if(!host || s.status!=="playing" || s.game.startedAt!==null)return fail("Only the host can start the game.");
+        s.game.startedAt=now;s.game.lastTick=now;
         addLog(s.game,"The room game started.","game_start",{goal:s.goal,timingPolicy:"server receipt order; no latency compensation",rulesVersion:"multiplayer-1"},now);break;
       case "press":
-        if(s.status!=="playing" || s.pausedAt!==null)return fail("The game is not running.");
+        if(s.status!=="playing" || s.game.startedAt===null || s.pausedAt!==null)return fail("The game is not running.");
         if(!ACTIONS.includes(c.action??""))return fail("Unknown action.");
         if(["steal","good"].includes(c.action!) && (!Number.isInteger(c.target)||c.target!<0||c.target!>3||c.target===seatId))return fail("Choose another player.");
         s.game=advanceRoom(s.game,now,s.goal);
@@ -91,7 +94,7 @@ export function command(s:RoomState,seatId:number,c:Command,now:number):Result {
         { const event=s.game.log.findLast(e=>e.type==="action_press");if(event?.details?.accepted===false)return fail(String(event.details.reason)); }
         break;
       case "pause":
-        if(!host || s.status!=="playing" || s.pausedAt!==null)return fail("Only the host can pause an active game.");
+        if(!host || s.status!=="playing" || s.game.startedAt===null || s.pausedAt!==null)return fail("Only the host can pause an active game.");
         s.game=advanceRoom(s.game,now,s.goal);
         if(s.game.winner!==null){s.status="complete";return fail("The game has ended.");}
         s.pausedAt=now;s.pauseReason="Host paused the game";s.plans={};
