@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Banknote } from "lucide-react";
+import { PowerUpIcon } from "./power-up-icons";
 
 type Event = { gameNumber: number; type: string; details?: Record<string, unknown> };
 type Transfer = { id: number; route: string[]; amount: number; kind: "gain" | "steal" | "drain" | "bonus"; elapsed: number };
@@ -68,7 +69,8 @@ export default function MoneyTravel({ events, names, gameKey, paused }: { events
     return () => cancelAnimationFrame(frame);
   }, [paused]);
 
-  return <div ref={layer} className="money-travel-layer" aria-hidden="true">{flights.map(f => <div key={f.id} className={`money-flight ${f.kind}`} style={{ left: f.x, top: f.y, opacity: f.opacity, borderColor: f.color }}>
-    <Banknote size={24}/><strong>${f.amount.toFixed(f.amount < 10 ? 2 : 0)}</strong><small>{f.label}</small>
-  </div>)}</div>;
+  return <div ref={layer} className="money-travel-layer" aria-hidden="true">{flights.map(f => f.kind === "steal" || f.kind === "drain"
+    ? <div key={f.id} className={`money-power-flight ${f.kind}`} style={{ left:f.x,top:f.y,opacity:f.opacity,color:f.color }}><PowerUpIcon type={f.kind === "steal" ? "steal" : "good"} size={44} title={false}/></div>
+    : <div key={f.id} className={`money-flight ${f.kind}`} style={{ left:f.x,top:f.y,opacity:f.opacity,borderColor:f.color }}><Banknote size={24}/><strong>${f.amount.toFixed(f.amount < 10 ? 2 : 0)}</strong><small>{f.label}</small></div>
+  )}</div>;
 }

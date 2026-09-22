@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Banknote, HandHeart, Siren, Zap } from "lucide-react";
+import { PowerUpIcon, PowerUpMeter } from "./power-up-icons";
 
 type Cleared = { owner: string; target: string; action: string };
 export default function LockdownEffects({ until, now, paused, actor, cleared, names }: { until: number; now: number; paused: boolean; actor: string; cleared: Cleared[]; names: string[] }) {
@@ -25,10 +25,9 @@ export default function LockdownEffects({ until, now, paused, actor, cleared, na
   },[paused,sweeping]);
   const remaining=Math.max(0,until-now), released=remaining===0;
   return <div ref={anchor} className={`lockdown-show ${paused?"is-paused":""}`}>
-    {sweeping && <div className="lockdown-sweep-layer" aria-hidden="true"><div className="lockdown-sweep-beam"/>{ghosts.map((g,i)=><div key={i} className="cleared-threat" style={{left:g.x,top:g.y,color:g.color,animationDelay:`${150+i*60}ms`}}>{g.action==="steal"?<Banknote size={16}/>:<HandHeart size={16}/>}<span>{g.owner} · {g.action==="steal"?"STEAL":"DRAIN"}</span><b>×</b></div>)}</div>}
-    {!released ? <div className={`lockdown-countdown ${remaining<=3000?"final-count":""} ${paused?"under-pause":""}`}>
-      <div className="lockdown-count-ring" style={{background:`conic-gradient(#ffb16b ${remaining/6000*360}deg, #361b31 0deg)`}}><strong>{Math.ceil(remaining/1000)}</strong></div>
-      <div><b><Siren size={17}/> LOCKDOWN</b><span>{actor} cleared {cleared.length} threat{cleared.length===1?"":"s"} · Shields stay</span><small>Pot growing · release in {(remaining/1000).toFixed(1)}s</small></div>
-    </div> : !paused && now-until<1400 ? <div className="lockdown-go" role="status"><Zap size={25}/><strong>GO!</strong><span>LOCKDOWN RELEASED</span></div> : null}
+    {sweeping && <div className="lockdown-sweep-layer" aria-hidden="true"><div className="lockdown-sweep-beam"/>{ghosts.map((g,i)=><div key={i} className="cleared-threat" style={{left:g.x,top:g.y,color:g.color,animationDelay:`${150+i*60}ms`}}><PowerUpIcon type={g.action==="steal"?"steal":"good"} size={34} title={false}/>{Array.from({length:4},(_,fragment)=><span key={fragment} className={`cleared-threat-shard shard-${fragment}`}><PowerUpIcon type={g.action==="steal"?"steal":"good"} size={34} title={false}/></span>)}</div>)}</div>}
+    {!released ? <div className={`lockdown-countdown ${remaining<=3000?"final-count":""} ${paused?"under-pause":""}`} role="status" aria-label={`Lockdown by ${actor}. ${(remaining/1000).toFixed(1)} seconds remaining. ${cleared.length} threats cleared.`} title={`Lockdown · ${(remaining/1000).toFixed(1)}s`}>
+      <PowerUpMeter type="lockdown" progress={remaining/6000} size={72}/>
+    </div> : !paused && now-until<1400 ? <div className="lockdown-go" role="status" aria-label="Lockdown released" title="Lockdown released"><PowerUpIcon type="lockdown" size={56} title={false}/></div> : null}
   </div>;
 }

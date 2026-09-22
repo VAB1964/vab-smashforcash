@@ -1,5 +1,5 @@
-import { Banknote, HandHeart } from "lucide-react";
 import type { CSSProperties } from "react";
+import { PowerUpMeter } from "./power-up-icons";
 type Player = { id: number; name: string; armed: { steal: {targetId:number; expiresAt:number} | null } };
 type Drain = { ownerId:number; targetId:number; nextTick:number; remaining:number };
 export default function ThreatMarkers({players,drains,targetId,now}:{players:Player[];drains:Drain[];targetId:number;now:number}) {
@@ -17,6 +17,6 @@ export default function ThreatMarkers({players,drains,targetId,now}:{players:Pla
   ].sort((a,b)=>a.remaining-b.remaining);
 
   return <div className="incoming-markers" aria-label="Incoming threats">
-    {threats.map((threat,index)=>{const Icon=threat.type==="steal"?Banknote:HandHeart;return <span className={`incoming-marker ${threat.type}-marker`} key={threat.key} title={threat.title} style={{"--threat-index":index} as CSSProperties}><Icon size={14}/><i><b style={{width:Math.min(100,threat.remaining/15000*100)+"%"}}/><span>{(threat.remaining/1000).toFixed(1)}s</span></i></span>;})}
+    {threats.map((threat,index)=><span className={`incoming-marker ${threat.type}-marker`} key={threat.key} title={`${threat.title}. ${(threat.remaining/1000).toFixed(1)} seconds remaining.`} aria-label={`${threat.title}. ${(threat.remaining/1000).toFixed(1)} seconds remaining.`} role="img" style={{"--threat-index":index} as CSSProperties}><PowerUpMeter type={threat.type==="steal"?"steal":"good"} progress={threat.remaining/15000} size={30}/></span>)}
   </div>;
 }
